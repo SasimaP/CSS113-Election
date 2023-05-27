@@ -8,7 +8,7 @@ import csv
 userlist = []
 partyList = []
 
-with open(r"C:\Users\ja\Work-ja\2-65\CSS131-Election\DB.csv") as csv_file:
+with open("./DB.csv") as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     for row in csv_reader:
         userlist.append(User.user(row[0], row[1]))
@@ -19,18 +19,21 @@ partyList.append(Party.party("Panda","FIBO","I am Panda"))
 partyList.append(Party.party("Ice Bear","ACS","I am Ice"))
 
 class tkinterApp(tk.Tk):
-    def __init__ (self) :
-        tk.Tk.__init__(self)
+    def __init__ (self, *args , **kwargs) :
+        tk.Tk.__init__(self, *args , **kwargs)
 
-        mainframe = ttk.Frame(self , width = 600 , height = 400)
-        mainframe.grid()
+        mainframe = ttk.Frame(self)
+        mainframe.pack(side="top", fill="both", expand=True)
+
+        mainframe.grid_rowconfigure(0 , weight=1)
+        mainframe.grid_columnconfigure(0 , weight=1)
 
         self.currentUser = User.user('','')
         self.frames = {}
         for F in (AuthenticatePage , MenuPage , PartyPage, ElectionPage, AdminPage ):
-            frame = F(mainframe , self)
+            frame = F(mainframe , self )
             self.frames[F] = frame
-            frame.grid(row = 0, column = 0, sticky ="nsew")
+            frame.grid(row = 0, column = 0 , sticky='nwes')
         self.show_page(AuthenticatePage)
 
     def show_page(self, cont) :
@@ -45,17 +48,35 @@ class tkinterApp(tk.Tk):
 
 class AuthenticatePage(tk.Frame):
     def __init__(self, parent, controller):
-        ttk.Frame.__init__(self, parent)
-        ttk.Label(self , text="Authentication" ,font=("Times New Roman", 20)).grid(row = 0 , column = 0, columnspan=2 , sticky = "WE")
-        ttk.Label(self , text="STD_ID" , width = 300, font=("Times New Roman", 12)).grid(row = 1 , column = 0, sticky = "NWE")
-        self.userEntry = ttk.Entry(self , width = 300 )
-        self.userEntry.grid(row =  1 , column = 1 , sticky = "NWE")
-        ttk.Label(self , text="PASS" , font=("Times New Roman", 12)).grid(row = 2, column = 2)
-        self.passEntry = ttk.Entry(self , show="*" )
-        self.passEntry.grid(row = 2 , column = 2)
+        self.controller = controller
+        # style = ttk.Style()
+        # style.configure("test.TFrame", background = "white")
+        # style.configure("w.TFrame", background = "green")
+        ttk.Frame.__init__(self, parent, style="test.TFrame")
 
-        ttk.Button(self ,text = "Submit", command= lambda : self.login(controller)).grid(row = 4, column = 2)
+        title = ttk.Label(self , text="Authentication" ,font=("Times New Roman", 20),anchor="center" ).pack(fill="x" , pady=(90 ,0))
+        # title.grid(row = 0 , column = 0, columnspan=2, sticky=EW)
+        userInputGroup = ttk.Frame(self)
+        userInputGroup.pack(pady=(10 , 5))
+        ttk.Label(userInputGroup , text="STD_ID" , font=("Times New Roman", 12), anchor=CENTER , width=10 ).pack(side=LEFT , fill="x")
+        # .grid(row = 1 , column = 0, sticky = "WE")
         
+        self.userEntry = ttk.Entry(userInputGroup)
+        self.userEntry.pack(side=LEFT , fill=BOTH)
+        # self.userEntry.grid(row =  1 , column = 1 , sticky = "E")
+
+        passInputGroup = ttk.Frame(self)
+        passInputGroup.pack(pady=(5, 10))
+        ttk.Label(passInputGroup , text="PASS" , font=("Times New Roman", 12),anchor=CENTER , width=10).pack(side=LEFT)
+        # .grid(row = 2, column = 0)
+        self.passEntry = ttk.Entry(passInputGroup , show="*" )
+        self.passEntry.pack(side=LEFT)
+        # self.passEntry.grid(row = 2 , column = 1)
+
+        ttk.Button(self ,text = "Submit", command= lambda : self.login(controller)).pack()
+        # ttk.Button(self ,text = "Submit", command= lambda : print()).grid(row = 4, columnspan=2)
+        
+
 
     def login(self, controller) :
         if self.userEntry.get() in [user.id for user in userlist] :
@@ -73,10 +94,10 @@ class AuthenticatePage(tk.Frame):
         else:
             messagebox.showerror("Error" , "Id " + self.userEntry.get() + " is not exist!")
 
-    def tkraise(self):
-        self.userEntry.delete(0 , tk.END)
-        self.passEntry.delete(0, tk.END)
-        super().tkraise(None)
+    def tkraise(self, aboveThis = None):
+        # self.userEntry.delete(0 , tk.END)
+        # self.passEntry.delete(0, tk.END)
+        super().tkraise(aboveThis)
 
 
         
@@ -153,5 +174,6 @@ class AdminPage(tk.Frame) :
         super().tkraise(None)
 
 app = tkinterApp()
-app.geometry("600x400") #size
+app.geometry("600x400")
 app.mainloop()
+
