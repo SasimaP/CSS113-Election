@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import *
 from tkinter import messagebox
+from PIL import Image, ImageTk
 import User
 import Party
 import csv
@@ -14,9 +15,12 @@ with open("DB.csv") as csv_file:
         userlist.append(User.user(row[0], row[1]))
 
 userlist.append(User.user("admin","1234", True))
-partyList.append(Party.party("Grizzly","IT","I am Brown"))
-partyList.append(Party.party("Panda","FIBO","I am Panda"))
-partyList.append(Party.party("Ice Bear","ACS","I am Ice"))
+userlist.append(User.user("123","1234"))
+userlist.append(User.user("321","1234"))
+
+partyList.append(Party.party("Grizzly","IT","ผมมีนโยบาย อัจฉริยะ เช่น!!! ยกเลิกแบงค์พัน!!!", "./img/grizzly.png"))
+partyList.append(Party.party("Panda","FIBO","ผมมีนโยบาย อัจฉริยะ เช่น!!! หวยใบเสร็จ!!!", "./img/Panda.png"))
+partyList.append(Party.party("Ice Bear","ACS","ผมมีนโยบาย อัจฉริยะ เช่น!!! Digital Wallet!!!", "./img/Ice_bear.png"))
 
 class tkinterApp(tk.Tk):
     def __init__ (self, *args , **kwargs) :
@@ -34,7 +38,7 @@ class tkinterApp(tk.Tk):
             frame = F(mainframe , self )
             self.frames[F] = frame
             frame.grid(row = 0, column = 0 , sticky='nwes')
-        self.show_page(MenuPage)
+        self.show_page(AuthenticatePage)
 
     def show_page(self, cont) :
         frame = self.frames[cont]
@@ -49,12 +53,11 @@ class tkinterApp(tk.Tk):
 class AuthenticatePage(tk.Frame):
     def __init__(self, parent, controller):
         self.controller = controller
-        # style = ttk.Style()
-        # style.configure("test.TFrame", background = "red")
-        # style.configure("w.TFrame", background = "green")
-        ttk.Frame.__init__(self, parent, style="test.TFrame")
 
-        title = ttk.Label(self , text="Authentication" ,font=("Times New Roman", 20),anchor="center" ).pack(fill="x" , pady=(90 ,0))
+        ttk.Frame.__init__(self, parent, style="test.TFrame")
+        style = ttk.Style()
+
+        ttk.Label(self , text="Authentication" ,font=("Times New Roman", 20),anchor="center" ).pack(fill="x" , pady=(90 ,0))
         # title.grid(row = 0 , column = 0, columnspan=2, sticky=EW)
         userInputGroup = ttk.Frame(self)
         userInputGroup.pack(pady=(10 , 5))
@@ -70,6 +73,7 @@ class AuthenticatePage(tk.Frame):
         ttk.Label(passInputGroup , text="PASS" , font=("Times New Roman", 12),anchor=CENTER , width=10).pack(side=LEFT)
         # .grid(row = 2, column = 0)
         self.passEntry = ttk.Entry(passInputGroup , show="*" )
+        self.passEntry.bind("<Return>" , lambda event : self.login(controller))
         self.passEntry.pack(side=LEFT)
         # self.passEntry.grid(row = 2 , column = 1)
 
@@ -94,38 +98,92 @@ class AuthenticatePage(tk.Frame):
             messagebox.showerror("Error" , "Id " + self.userEntry.get() + " is not exist!")
 
     def tkraise(self, aboveThis = None):
-        # self.userEntry.delete(0 , tk.END)
-        # self.passEntry.delete(0, tk.END)
+        self.userEntry.delete(0 , tk.END)
+        self.passEntry.delete(0, tk.END)
         super().tkraise(aboveThis)
 
    
 class MenuPage(tk.Frame):
      def __init__(self, parent, controller):
+        style = ttk.Style()
+        style.configure("buttonStyle.TButton", font = ("Times New Roman", 18))
+
         ttk.Frame.__init__(self, parent)
         # ttk.Label(self , text="Menu" , font=("Times New Roman", 20)).grid(row = 0)
 
-        ButtonGroup = ttk.Frame(self, height = 20)
-        ButtonGroup.pack(pady=(130 , 5))
-        ttk.Button(ButtonGroup ,text = "Party Detail" , command= lambda : controller.show_page(PartyPage)).pack(side = LEFT)
-        ttk.Button(ButtonGroup ,text = "Election" , command= lambda : controller.show_page(ElectionPage)).pack(side = LEFT, expand=1, fill="both")
+        ButtonGroup = ttk.Frame(self)
+        ButtonGroup.pack(pady=(130 , 5), ipady=40 , fill=Y)
+        ttk.Button(ButtonGroup ,text = "Party Detail" , command= lambda : controller.show_page(PartyPage), style="buttonStyle.TButton").pack(side = LEFT , fill=Y, padx=15 , ipadx=35)
+        ttk.Button(ButtonGroup ,text = "Election" , command= lambda : controller.show_page(ElectionPage), style="buttonStyle.TButton").pack(side = LEFT, fill=Y, padx=15 , ipadx=35)
 
 class PartyPage(tk.Frame):
-     def __init__(self, parent, controller):
+    def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
+        partyFrame = ttk.Frame(self)
+        partyFrame.pack(pady=(20 , 20))
+        imgLabel = [0,0,0]
         for i in range(len(partyList)):
-            ttk.Label(self, text= partyList[i].introduce()).grid(row = i)
-        ttk.Button(self ,text = "Vote" , command= lambda : controller.show_page(ElectionPage)).grid(row = 4 , sticky="NWES")
+            frame = ttk.Frame(partyFrame)
+            frame.pack(side=LEFT , padx=20)
+
+            imgLoad = Image.open(partyList[i].img) 
+            imgLoad = imgLoad.resize((120,180),Image.LANCZOS)
+            img = ImageTk.PhotoImage(imgLoad)
+
+            imgLabel[i] = ttk.Label(frame , image= img)
+            imgLabel[i].bind("<Enter>" , lambda event , party = partyList[i] : self.show_detail(party))
+            imgLabel[i].bind("<Leave>" , self.clearInfoFrame)
+
+
+            imgLabel[i].image = img
+            imgLabel[i].pack()
+            
+        btn = ttk.Button(self ,text = "Vote" , command= lambda : controller.show_page(ElectionPage))
+        btn.place(rely=0.95, relx=0.95, x=0, y=0, anchor=SE)
+        
+        self.infoFrame = ttk.Frame(self)
+        self.infoFrame.pack(pady=25)
+        ttk.Label(self.infoFrame , text = "Hover image for infomation" , font=("Times New Roman" , 16)).pack()
+
+    def show_detail(self , info) :
+        self.infoFrame.winfo_children()[0].destroy()
+        ttk.Label(self.infoFrame , text = "Name : " + info.name ,font=("Times New Roman", 12) ).pack(side=TOP )
+        ttk.Label(self.infoFrame , text = "Department : " +info.depart,font=("Times New Roman", 12) ).pack(side=TOP)
+        ttk.Label(self.infoFrame , text = "Short introduction : " +info.intro,font=("Times New Roman", 12) ).pack(side=TOP)
+
+    def clearInfoFrame(self, event) :
+        for w in self.infoFrame.winfo_children() :
+            w.destroy()
+        ttk.Label(self.infoFrame , text = "Hover image for infomation" , font=("Times New Roman" , 16)).pack()
+
+
+
 
 class ElectionPage(tk.Frame):
     def __init__(self, parent, controller):
+        style = ttk.Style()
+        style.configure("buttonStyle.TCheckbutton", font = ("Times New Roman", 16))
+        style.configure("buttonStyle.TButton", font = ("Times New Roman", 12))
+
         ttk.Frame.__init__(self, parent)
+
         self.score = [tk.IntVar(),tk.IntVar(),tk.IntVar()]
         self.checkbox = [0, 0, 0]
+
+        ttk.Label(self, text = "You can choose maximum 2 of party form party list or none of them.", font= ("Times New Roman" , 12)).pack(pady= (50 , 10))
+
+        checkboxFrame = ttk.Frame(self )
+        checkboxFrame.pack(fill='x' , padx = 50 , pady = 15)
+
         for i in range(len(partyList)):
-            self.checkbox[i] = ttk.Checkbutton(self, text= partyList[i].name , variable=self.score[i] , command = self.updateCheckButton)
-            self.checkbox[i].grid(row = i , column = 0)
-        ttk.Button(self, text="Back" , command = lambda : self.confirm_vote(controller)).grid(row = 4)
-        ttk.Button(self, text="Confirm" , command = lambda : self.confirm_vote(controller)).grid(row = 5)
+            self.checkbox[i] = ttk.Checkbutton(checkboxFrame, text= partyList[i].name , variable=self.score[i] , command = self.updateCheckButton , style="buttonStyle.TCheckbutton")
+            self.checkbox[i].pack(fill = 'x' , pady = 5)
+
+        buttonFrame = ttk.Frame(self)
+        buttonFrame.pack()
+
+        ttk.Button(buttonFrame, text="Party Detail" , command = lambda : controller.show_page(PartyPage) , style= "buttonStyle.TButton").pack(side=LEFT , padx = 10 , ipady= 10)
+        ttk.Button(buttonFrame, text="Confirm" , command = lambda : self.confirm_vote(controller), style= "buttonStyle.TButton").pack(side=LEFT , padx = 10, ipady= 10)
         
         
     def confirm_vote(self, controller) :
@@ -160,17 +218,29 @@ class ElectionPage(tk.Frame):
 class AdminPage(tk.Frame) :
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
-        for i in range(len(partyList)) :
-            ttk.Label(self ,text = partyList[i].toString()).grid(row = i)
-        ttk.Button(self, text = "Go back", command = lambda : controller.show_page(AuthenticatePage)).grid(row = len(partyList) + 1)
+        partyFrame = ttk.Frame(self)
+        partyFrame.pack(pady=(20 , 20))
+        imgLabel = [0,0,0]
+        self.textLabel = [0,0,0]
+        for i in range(len(partyList)):
+            frame = ttk.Frame(partyFrame)
+            frame.pack(side=LEFT , padx=20)
+
+            imgLoad = Image.open(partyList[i].img) 
+            imgLoad = imgLoad.resize((120,180),Image.LANCZOS)
+            img = ImageTk.PhotoImage(imgLoad)
+
+            imgLabel[i] = ttk.Label(frame , image= img)
+            imgLabel[i].image = img
+            imgLabel[i].pack()
+            self.textLabel[i] = ttk.Label(frame , text = partyList[i].name + " : " + str(partyList[i].score) , font= ("Times New Roman" , 12))
+            self.textLabel[i].pack()
+        ttk.Button(self, text = "Go back", command = lambda : controller.show_page(AuthenticatePage)).pack()
         
-    def reloadScore(self) :
-        for i in range(3) :
-            print(partyList[i].toString())
 
     def tkraise(self):
         for i in range(len(partyList)) :
-            ttk.Label(self ,text = partyList[i].toString()).grid(row = i)
+            self.textLabel[i].config(text= partyList[i].name + " : " + str(partyList[i].score))
         super().tkraise(None)
 
 app = tkinterApp()

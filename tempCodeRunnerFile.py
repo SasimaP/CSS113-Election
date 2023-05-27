@@ -1,3 +1,4 @@
-style = ttk.Style()
-        # style.configure("test.TFrame", background = "white")
-        # style.configure("w.TFrame", background = "green")
+  # def tkraise(self):
+    #     for i in range(len(partyList)) :
+    #         ttk.Label(self ,text = partyList[i].toString()).grid(row = i)
+    #     super().tkraise(None)
