@@ -8,7 +8,7 @@ import csv
 userlist = []
 partyList = []
 
-with open("./DB.csv") as csv_file:
+with open("DB.csv") as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     for row in csv_reader:
         userlist.append(User.user(row[0], row[1]))
@@ -34,7 +34,7 @@ class tkinterApp(tk.Tk):
             frame = F(mainframe , self )
             self.frames[F] = frame
             frame.grid(row = 0, column = 0 , sticky='nwes')
-        self.show_page(AuthenticatePage)
+        self.show_page(MenuPage)
 
     def show_page(self, cont) :
         frame = self.frames[cont]
@@ -50,7 +50,7 @@ class AuthenticatePage(tk.Frame):
     def __init__(self, parent, controller):
         self.controller = controller
         # style = ttk.Style()
-        # style.configure("test.TFrame", background = "white")
+        # style.configure("test.TFrame", background = "red")
         # style.configure("w.TFrame", background = "green")
         ttk.Frame.__init__(self, parent, style="test.TFrame")
 
@@ -58,11 +58,11 @@ class AuthenticatePage(tk.Frame):
         # title.grid(row = 0 , column = 0, columnspan=2, sticky=EW)
         userInputGroup = ttk.Frame(self)
         userInputGroup.pack(pady=(10 , 5))
-        ttk.Label(userInputGroup , text="STD_ID" , font=("Times New Roman", 12), anchor=CENTER , width=10 ).pack(side=LEFT , fill="x")
+        ttk.Label(userInputGroup , text="STD_ID" , font=("Times New Roman", 12), anchor=CENTER , width=10 ).pack(side=LEFT)
         # .grid(row = 1 , column = 0, sticky = "WE")
         
         self.userEntry = ttk.Entry(userInputGroup)
-        self.userEntry.pack(side=LEFT , fill=BOTH)
+        self.userEntry.pack(side=LEFT)
         # self.userEntry.grid(row =  1 , column = 1 , sticky = "E")
 
         passInputGroup = ttk.Frame(self)
@@ -76,7 +76,6 @@ class AuthenticatePage(tk.Frame):
         ttk.Button(self ,text = "Submit", command= lambda : self.login(controller)).pack()
         # ttk.Button(self ,text = "Submit", command= lambda : print()).grid(row = 4, columnspan=2)
         
-
 
     def login(self, controller) :
         if self.userEntry.get() in [user.id for user in userlist] :
@@ -99,15 +98,16 @@ class AuthenticatePage(tk.Frame):
         # self.passEntry.delete(0, tk.END)
         super().tkraise(aboveThis)
 
-
-        
+   
 class MenuPage(tk.Frame):
      def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
-        ttk.Label(self , text="Menu" , font=("Times New Roman", 20)).grid(row = 0)
+        # ttk.Label(self , text="Menu" , font=("Times New Roman", 20)).grid(row = 0)
 
-        ttk.Button(self ,text = "Party Detail" , command= lambda : controller.show_page(PartyPage)).grid(row = 0 , sticky="NWES")
-        ttk.Button(self ,text = "Election" , command= lambda : controller.show_page(ElectionPage)).grid(row = 1 , sticky="NWES")
+        ButtonGroup = ttk.Frame(self, height = 20)
+        ButtonGroup.pack(pady=(130 , 5))
+        ttk.Button(ButtonGroup ,text = "Party Detail" , command= lambda : controller.show_page(PartyPage)).pack(side = LEFT)
+        ttk.Button(ButtonGroup ,text = "Election" , command= lambda : controller.show_page(ElectionPage)).pack(side = LEFT, expand=1, fill="both")
 
 class PartyPage(tk.Frame):
      def __init__(self, parent, controller):
